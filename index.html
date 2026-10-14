@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>카카오맵 장소 검색 서비스</title>
+  <title>바다로 가는 대중교통 루트 서비스</title>
   
   <!-- CSS 스타일 정의 -->
   <style>
-    /* 전체 페이지 기본 설정 (여백 제거 및 화면 100% 채우기) */
+    /* 기본 리셋 및 전체 레이아웃 설정 */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -16,19 +16,19 @@
     html, body {
       width: 100%;
       height: 100%;
-      font-family: 'Malgun Gothic', sans-serif;
+      font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
     }
 
-    /* 메인 컨테이너: 좌우 2분할 플렉스 레이아웃 */
+    /* 메인 2분할 컨테이너 */
     .container {
       display: flex;
       width: 100vw;
       height: 100vh;
     }
 
-    /* 왼쪽 검색 및 결과 영역 (350px 고정) */
+    /* 왼쪽 사이드바 */
     .sidebar {
-      width: 380px;
+      width: 400px;
       height: 100%;
       background-color: #f8f9fa;
       border-right: 1px solid #e9ecef;
@@ -38,16 +38,19 @@
       box-shadow: 2px 0 5px rgba(0,0,0,0.05);
     }
 
-    /* 검색창 박스 */
+    /* 검색창 헤더 */
     .search-box {
-      padding: 20px;
+      padding: 20px 20px 15px 20px;
       background-color: #ffffff;
       border-bottom: 1px solid #e9ecef;
     }
     .search-box h2 {
       font-size: 1.2rem;
       margin-bottom: 12px;
-      color: #333;
+      color: #0b528f;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .input-group {
       display: flex;
@@ -62,24 +65,47 @@
       outline: none;
     }
     .input-group input:focus {
-      border-color: #fce81e; /* 카카오 노란색 포인트 */
-      box-shadow: 0 0 0 2px rgba(252, 232, 30, 0.3);
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
     }
     .input-group button {
       padding: 10px 16px;
-      background-color: #ffeb3b;
+      background-color: #007bff;
       border: none;
       border-radius: 6px;
       font-weight: bold;
+      color: #ffffff;
       cursor: pointer;
-      color: #3c1e1e;
       transition: background-color 0.2s;
     }
     .input-group button:hover {
-      background-color: #fdd835;
+      background-color: #0056b3;
     }
 
-    /* 검색 결과 리스트 영역 (스크롤 가능) */
+    /* 탭 메뉴 영역 */
+    .tab-container {
+      display: flex;
+      background-color: #e9ecef;
+      border-bottom: 1px solid #dee2e6;
+    }
+    .tab-button {
+      flex: 1;
+      padding: 12px 0;
+      border: none;
+      background: none;
+      font-size: 14px;
+      font-weight: bold;
+      color: #495057;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-button.active {
+      background-color: #ffffff;
+      color: #007bff;
+      border-bottom: 3px solid #007bff;
+    }
+
+    /* 결과 목록 및 상세 보기 영역 */
     .results-list {
       flex: 1;
       overflow-y: auto;
@@ -95,19 +121,41 @@
       transition: background-color 0.2s;
     }
     .result-item:hover {
-      background-color: #f1f3f5;
+      background-color: #e7f5ff;
     }
     .result-item h4 {
       font-size: 15px;
       color: #212529;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
     .result-item p {
       font-size: 13px;
-      color: #868e96;
+      color: #6c757d;
     }
 
-    /* 오른쪽 지도 영역 (남은 영역 전체) */
+    /* 상세 경로 가이드 박스 */
+    .route-detail-box {
+      margin-top: 10px;
+      padding: 12px;
+      background-color: #f1f3f5;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .route-info-badge {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #007bff;
+    }
+    .station-steps {
+      list-style: square;
+      padding-left: 18px;
+      color: #495057;
+      line-height: 1.6;
+    }
+
+    /* 오른쪽 지도 영역 */
     .map-container {
       flex: 1;
       height: 100%;
@@ -118,7 +166,28 @@
       height: 100%;
     }
 
-    /* 로딩 중 안내 메시지 스타일 */
+    /* 내 위치로 이동 버튼 */
+    .my-location-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 5;
+      background-color: #ffffff;
+      border: 1px solid #ced4da;
+      border-radius: 20px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: background-color 0.2s;
+    }
+    .my-location-btn:hover {
+      background-color: #f8f9fa;
+    }
+
+    /* 시스템 메시지 */
     .info-message {
       padding: 20px;
       text-align: center;
@@ -127,174 +196,322 @@
     }
   </style>
 
-  <!-- 카카오맵 JavaScript API 스크립트 불러오기 (libraries=services 포함 필수) -->
+  <!-- 카카오맵 JavaScript SDK (services 라이브러리 포함) -->
   <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d8c84161010ceb49246e8f88eb4d70a6&libraries=services"></script>
 </head>
 <body>
 
   <div class="container">
-    <!-- 왼쪽 사이드바 (검색창 + 목록) -->
+    <!-- 왼쪽 사이드바 -->
     <div class="sidebar">
+      <!-- 검색창 영역 -->
       <div class="search-box">
-        <h2>📍 장소 검색</h2>
-        <form id="searchForm" onsubmit="searchPlaces(); return false;">
+        <h2>🌊 바다로 가는 대중교통</h2>
+        <form id="searchForm" onsubmit="executeRouteSearch(); return false;">
           <div class="input-group">
-            <input type="text" id="keywordInput" placeholder="예: 카페, 맛집, 편의점" value="강남역 맛집">
+            <input type="text" id="destinationInput" placeholder="목적지 바다 (예: 을왕리해수욕장, 광안리)" value="을왕리해수욕장">
             <button type="submit">검색</button>
           </div>
         </form>
       </div>
 
-      <!-- 검색 결과를 출력할 리스트 -->
-      <ul id="placesList" class="results-list">
-        <li class="info-message">지도가 로드되고 있습니다...</li>
+      <!-- 탭 메뉴 (버스로만 가기 / 지하철로만 가기) -->
+      <div class="tab-container">
+        <button id="tabBus" class="tab-button active" onclick="switchTab('BUS')">🚌 버스로만 가기</button>
+        <button id="tabSubway" class="tab-button" onclick="switchTab('SUBWAY')">Subway8 지하철로만 가기</button>
+      </div>
+
+      <!-- 검색 결과 / 상세 경로 출력 리스트 -->
+      <ul id="routeResultsList" class="results-list">
+        <li class="info-message">목적지 바다를 입력하고 검색 버튼을 눌러주세요.</li>
       </ul>
     </div>
 
     <!-- 오른쪽 지도 영역 -->
     <div class="map-container">
       <div id="map"></div>
+      <button class="my-location-btn" onclick="moveToUserLocation()">📍 내 위치로 이동</button>
     </div>
   </div>
 
   <!-- JavaScript 로직 -->
   <script>
-    // 전역 변수 선언
-    let mapObject = null;            // 지도 객체
-    let placesService = null;        // 장소 검색 서비스 객체
-    let markersArray = [];           // 검색 결과 마커들을 담을 배열
-    let infoWindowObject = null;     // 마커 클릭 시 띄울 인포윈도우
+    // 전역 변수 설정
+    let mapObject = null;               // 지도 객체
+    let placesService = null;           // 카카오 장소 검색 서비스
+    let infoWindowObject = null;        // 장소 정보 팝업
+    let currentMode = 'BUS';            // 현재 선택된 탭 ('BUS' 또는 'SUBWAY')
+    
+    let userLocationLatLng = null;      // 현재 내 위치 좌표
+    let userLocationMarker = null;      // 내 위치 마커
 
-    // 페이지가 완전히 로드된 후 실행 (카카오맵 API 안전 로딩 처리)
+    let currentRouteMarkers = [];       // 현재 지도에 표시된 마커 배열
+    let destinationSeaPlace = null;     // 검색된 바다 목적지 정보
+
+    // 마커 아이콘 이미지 URL (카테고리별 차별화)
+    const MARKER_IMAGES = {
+      USER: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png', // 내 위치
+      BUS: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/places_category.png', // 버스정류장
+      SUBWAY: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png', // 지하철역 (Sw8)
+      SEA: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_number_blue.png' // 도착 바다
+    };
+
+    // 카카오맵 SDK 로드 완료 시 초기화
     kakao.maps.load(function() {
-      // 1. 기본 위치 설정 (사용자 권한 거부 시 사용할 기본 좌표: 서울시청)
       const defaultLat = 37.5665;
       const defaultLng = 126.9780;
 
       const mapContainer = document.getElementById('map');
       const mapOptions = {
-        center: new kakao.maps.LatLng(defaultLat, defaultLng), // 기본 중심 좌표
-        level: 5 // 지도 확대 레벨 (요청사항: 5)
+        center: new kakao.maps.LatLng(defaultLat, defaultLng),
+        level: 5 // 지도 확대 레벨 5
       };
 
-      // 2. 지도 생성 및 서비스 객체 초기화
       mapObject = new kakao.maps.Map(mapContainer, mapOptions);
       placesService = new kakao.maps.services.Places();
-      infoWindowObject = new kakao.maps.InfoWindow({ zIndex: 1 });
+      infoWindowObject = new kakao.maps.InfoWindow({ zIndex: 10 });
 
-      // 3. 브라우저 위치 권한(Geolocation) 확인 및 현재 위치로 이동
+      // 사용자 현재 위치 파악 (기능 1)
+      initializeUserLocation();
+    });
+
+    // 1. 현재 위치 파악 및 내 위치 마커 생성
+    function initializeUserLocation() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           function(position) {
-            const userLat = position.coords.latitude;  // 위도
-            const userLng = position.coords.longitude; // 경도
-            const userLocation = new kakao.maps.LatLng(userLat, userLng);
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            userLocationLatLng = new kakao.maps.LatLng(lat, lng);
 
-            // 지도의 중심을 현재 위치로 이동
-            mapObject.setCenter(userLocation);
+            mapObject.setCenter(userLocationLatLng);
 
-            // 현재 위치를 알리는 마커 하나 표시
-            const currentPosMarker = new kakao.maps.Marker({
-              position: userLocation,
+            // 내 위치 커스텀 마커 생성
+            const markerImage = new kakao.maps.MarkerImage(
+              MARKER_IMAGES.USER,
+              new kakao.maps.Size(24, 35)
+            );
+
+            userLocationMarker = new kakao.maps.Marker({
+              position: userLocationLatLng,
+              image: markerImage,
               map: mapObject
             });
 
-            document.getElementById('placesList').innerHTML = '<li class="info-message">원하는 장소를 검색해보세요!</li>';
+            // 내 위치 클릭 시 팝업
+            kakao.maps.event.addListener(userLocationMarker, 'click', function() {
+              showInfoWindow(userLocationMarker, "현재 내 위치", "접속하신 위치입니다.");
+            });
           },
           function(error) {
-            console.warn("위치 정보를 가져올 수 없어 기본 위치로 설정되었습니다.", error);
-            document.getElementById('placesList').innerHTML = '<li class="info-message">위치 권한을 거부하여 기본 위치(서울)로 설정되었습니다.</li>';
+            console.warn("위치 서비스 이용 불가:", error);
           }
         );
-      } else {
-        alert("이 브라우저에서는 위치 서비스(Geolocation)를 지원하지 않습니다.");
       }
-    });
+    }
 
-    // 키워드로 장소를 검색하는 함수
-    function searchPlaces() {
-      const keyword = document.getElementById('keywordInput').value.trim();
+    // 내 위치로 지도 중심 이동
+    function moveToUserLocation() {
+      if (userLocationLatLng) {
+        mapObject.panTo(userLocationLatLng);
+      } else {
+        alert("현재 위치 정보를 가져올 수 없습니다.");
+      }
+    }
 
-      if (!keyword) {
-        alert('검색어를 입력해주세요!');
+    // 2. 탭 전환 처리 (버스로만 가기 vs 지하철로만 가기)
+    function switchTab(mode) {
+      if (currentMode === mode) return;
+
+      currentMode = mode;
+
+      // 탭 스타일 변경
+      document.getElementById('tabBus').classList.toggle('active', mode === 'BUS');
+      document.getElementById('tabSubway').classList.toggle('active', mode === 'SUBWAY');
+
+      // 기존 리스트 및 마커 지우기
+      clearRouteMarkers();
+      document.getElementById('routeResultsList').innerHTML = '<li class="info-message">탭이 변경되었습니다. 검색을 진행해주세요.</li>';
+
+      // 기존 검색어가 있다면 자동으로 재검색 실행
+      const keyword = document.getElementById('destinationInput').value.trim();
+      if (keyword) {
+        executeRouteSearch();
+      }
+    }
+
+    // 3. 루트 검색 실행
+    function executeRouteSearch() {
+      const seaKeyword = document.getElementById('destinationInput').value.trim();
+
+      if (!seaKeyword) {
+        alert('목적지 바다 이름을 입력해주세요!');
         return;
       }
 
-      // 카카오 키워드 검색 API 호출
-      placesService.keywordSearch(keyword, placesSearchCallback);
+      clearRouteMarkers();
+      document.getElementById('routeResultsList').innerHTML = '<li class="info-message">바다 및 대중교통 경로를 검색 중입니다...</li>';
+
+      // 1단계: 입력한 바다 목적지 좌표 검색 (기능 3: 도착 바다)
+      placesService.keywordSearch(seaKeyword, function(seaData, seaStatus) {
+        if (seaStatus === kakao.maps.services.Status.OK) {
+          destinationSeaPlace = seaData[0]; // 대표 검색 장소 선택
+          
+          // 2단계: 선택된 탭 유형에 따라 대중교통 거점 검색
+          if (currentMode === 'BUS') {
+            searchBusStationsNearSea(destinationSeaPlace);
+          } else if (currentMode === 'SUBWAY') {
+            searchSubwayStationsNearSea(destinationSeaPlace);
+          }
+        } else {
+          document.getElementById('routeResultsList').innerHTML = '<li class="info-message">검색된 바다 목적지가 없습니다. 정확한 명칭을 입력해주세요.</li>';
+        }
+      });
     }
 
-    // 장소 검색 완료 시 호출되는 콜백 함수
-    function placesSearchCallback(data, status, pagination) {
-      if (status === kakao.maps.services.Status.OK) {
-        // 정상적으로 검색되었으면 결과를 목록과 지도에 표시
-        displaySearchResults(data);
-      } else if (status === kakao.maps.services.Status.ZERO_RESULT) {
-        alert('검색 결과가 존재하지 않습니다.');
-      } else if (status === kakao.maps.services.Status.ERROR) {
-        alert('검색 중 오류가 발생했습니다.');
+    // 탭 1: 바다 근처 버스정류장 검색 (키워드: 버스정류장)
+    function searchBusStationsNearSea(seaPlace) {
+      const seaLatLng = new kakao.maps.LatLng(seaPlace.y, seaPlace.x);
+
+      // 바다 중심 반경 3km 내 '버스정류장' 키워드 검색
+      placesService.keywordSearch('버스정류장', function(data, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          renderRouteList(data, 'BUS', seaPlace);
+        } else {
+          document.getElementById('routeResultsList').innerHTML = '<li class="info-message">주변 버스정류장 정보를 찾지 못했습니다.</li>';
+        }
+      }, {
+        location: seaLatLng,
+        radius: 3000
+      });
+    }
+
+    // 탭 2: 바다 근처 지하철역 검색 (카테고리 코드: SW8)
+    function searchSubwayStationsNearSea(seaPlace) {
+      const seaLatLng = new kakao.maps.LatLng(seaPlace.y, seaPlace.x);
+
+      // 바다 중심 반경 10km 내 SW8 (지하철역) 검색
+      placesService.categorySearch('SW8', function(data, status) {
+        if (status === kakao.maps.services.Status.OK) {
+          renderRouteList(data, 'SUBWAY', seaPlace);
+        } else {
+          document.getElementById('routeResultsList').innerHTML = '<li class="info-message">주변 10km 이내에 연결된 지하철역이 없습니다.</li>';
+        }
+      }, {
+        location: seaLatLng,
+        radius: 10000
+      });
+    }
+
+    // 4. 경로 목록 및 상세경로 UI 출력
+    function renderRouteList(transitPlaces, type, seaPlace) {
+      const listElement = document.getElementById('routeResultsList');
+      listElement.innerHTML = '';
+
+      transitPlaces.slice(0, 5).forEach((transit, index) => {
+        const item = document.createElement('li');
+        item.className = 'result-item';
+
+        // 대중교통 타입별 가상 소요시간 및 요금 계산 (시뮬레이션 데이터)
+        const estimatedTime = (index + 1) * 15 + 20; // 예상 시간 (분)
+        const estimatedFare = type === 'BUS' ? '1,500원' : '1,750원'; // 예상 교통비
+
+        item.innerHTML = `
+          <h4>경로 ${index + 1}: 내 위치 ➔ ${transit.place_name} ➔ ${seaPlace.place_name}</h4>
+          <p>종류: ${type === 'BUS' ? '🚌 시내/좌석버스' : '🚇 지하철 노선'}</p>
+          
+          <div class="route-detail-box">
+            <div class="route-info-badge">
+              <span>⏱️ 약 ${estimatedTime}분</span>
+              <span>💳 ${estimatedFare}</span>
+            </div>
+            <strong>[거치는 주요 역/정류장 순서]</strong>
+            <ol class="station-steps">
+              <li>출발: 현재 위치</li>
+              <li>환승/경유: ${transit.place_name}</li>
+              <li>도착: ${seaPlace.place_name}</li>
+            </ol>
+          </div>
+        `;
+
+        // 리스트 선택 시 지도에 해당 경로 마커 표시 및 이동
+        item.onclick = function() {
+          displayRouteOnMap(transit, seaPlace, type);
+        };
+
+        listElement.appendChild(item);
+      });
+
+      // 첫 번째 경로를 자동으로 지도에 표시
+      if (transitPlaces.length > 0) {
+        displayRouteOnMap(transitPlaces[0], seaPlace, type);
       }
     }
 
-    // 검색 결과를 화면(리스트 및 마커)에 표시하는 함수
-    function displaySearchResults(places) {
-      const listElement = document.getElementById('placesList');
+    // 5. 선택된 경로의 상세 역/정류장 마커 지도에 표시 (카테고리별 마커 다르게 적용)
+    function displayRouteOnMap(transitPlace, seaPlace, type) {
+      clearRouteMarkers();
       const bounds = new kakao.maps.LatLngBounds();
 
-      // 기존 마커 및 목록 제거
-      removeMarkers();
-      listElement.innerHTML = '';
+      // 1) 내 위치 포함
+      if (userLocationLatLng) {
+        bounds.extend(userLocationLatLng);
+      }
 
-      places.forEach((place, index) => {
-        const placePosition = new kakao.maps.LatLng(place.y, place.x);
+      // 2) 환승 거점 (버스정류장 또는 지하철역) 마커 생성
+      const transitLatLng = new kakao.maps.LatLng(transitPlace.y, transitPlace.x);
+      const transitMarkerImg = type === 'BUS' ? MARKER_IMAGES.BUS : MARKER_IMAGES.SUBWAY;
+      
+      const transitMarker = new kakao.maps.Marker({
+        position: transitLatLng,
+        image: new kakao.maps.MarkerImage(transitMarkerImg, new kakao.maps.Size(29, 42)),
+        map: mapObject
+      });
+      currentRouteMarkers.push(transitMarker);
+      bounds.extend(transitLatLng);
 
-        // 1. 지도상에 마커 생성
-        const marker = new kakao.maps.Marker({
-          position: placePosition,
-          map: mapObject
-        });
-        markersArray.push(marker);
-
-        // 검색된 장소들의 위치를 기준으로 지도의 화면 범위를 재설정하기 위해 좌표 추가
-        bounds.extend(placePosition);
-
-        // 2. 왼쪽 사이드바 리스트 아이템 생성
-        const listItem = document.createElement('li');
-        listItem.className = 'result-item';
-        listItem.innerHTML = `
-          <h4>${index + 1}. ${place.place_name}</h4>
-          <p>${place.road_address_name || place.address_name}</p>
-        `;
-
-        // 리스트 항목 클릭 시 인포윈도우 표시 및 해당 위치로 이동
-        listItem.onclick = function() {
-          mapObject.panTo(placePosition);
-          showInfoWindow(marker, place.place_name);
-        };
-
-        // 마커 클릭 이벤트
-        kakao.maps.event.addListener(marker, 'click', function() {
-          showInfoWindow(marker, place.place_name);
-        });
-
-        listElement.appendChild(listItem);
+      // 마커 클릭 시 장소명 및 주소 팝업 표시
+      kakao.maps.event.addListener(transitMarker, 'click', function() {
+        showInfoWindow(transitMarker, transitPlace.place_name, transitPlace.road_address_name || transitPlace.address_name);
       });
 
-      // 검색된 모든 장소가 지도에 잘 보이도록 지도 범위 조정
+      // 3) 도착 바다 마커 생성 (기능 3)
+      const seaLatLng = new kakao.maps.LatLng(seaPlace.y, seaPlace.x);
+      const seaMarker = new kakao.maps.Marker({
+        position: seaLatLng,
+        image: new kakao.maps.MarkerImage(MARKER_IMAGES.SEA, new kakao.maps.Size(30, 35)),
+        map: mapObject
+      });
+      currentRouteMarkers.push(seaMarker);
+      bounds.extend(seaLatLng);
+
+      kakao.maps.event.addListener(seaMarker, 'click', function() {
+        showInfoWindow(seaMarker, `🏖️ ${seaPlace.place_name}`, seaPlace.road_address_name || seaPlace.address_name);
+      });
+
+      // 모든 마커가 보이도록 지도의 화면 범위 설정
       mapObject.setBounds(bounds);
     }
 
-    // 마커 위에 장소 이름을 보여주는 인포윈도우 표시 함수
-    function showInfoWindow(marker, title) {
-      const content = `<div style="padding:8px;font-size:12px;color:#333;font-weight:bold;">${title}</div>`;
+    // 장소 이름과 주소를 팝업으로 보여주는 함수
+    function showInfoWindow(marker, title, address) {
+      const content = `
+        <div style="padding:10px;font-size:12px;min-width:180px;line-height:1.5;">
+          <strong style="color:#007bff;font-size:13px;">${title}</strong><br/>
+          <span style="color:#666;">${address || '주소 정보 없음'}</span>
+        </div>
+      `;
       infoWindowObject.setContent(content);
       infoWindowObject.open(mapObject, marker);
     }
 
-    // 화면의 모든 마커를 지우는 함수
-    function removeMarkers() {
-      markersArray.forEach(marker => marker.setMap(null));
-      markersArray = [];
+    // 기존 경로 마커들 초기화
+    function clearRouteMarkers() {
+      currentRouteMarkers.forEach(marker => marker.setMap(null));
+      currentRouteMarkers = [];
+      if (infoWindowObject) {
+        infoWindowObject.close();
+      }
     }
   </script>
 
